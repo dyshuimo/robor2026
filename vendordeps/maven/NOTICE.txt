@@ -1,38 +1,62 @@
-Offline robot deployment dependencies
+Offline Java robot dependencies for roboRIO image 2026_v1.2
 
-These unmodified artifacts provide every native library in this Java project's
-roborioRelease configuration, plus the ReduxLib Java API and desktop drivers.
-build.gradle prefers this repository for roboRIO release natives. Its
-verifyOfflineRoboRio task checks that every release native resolves from here;
-the normal build/check tasks also run that verification.
+This Maven repository contains unmodified upstream artifacts for this project's
+build, tests, and release deployment. build.gradle and settings.gradle prefer it
+over external repositories. The normal build/check tasks verify that every build,
+Java, test, release-native, and roboRIO JRE dependency resolves from this bundle.
+verifyOfflineRoboRio also checks that GradleRIO supports image 2026_v1.2.
 
-WPILib 2025.3.2: hal, wpimath, ntcore, cscore, wpinet, wpiutil, and apriltag
-OpenCV 4.10.0-3: WPILib's frc2025 build
-REVLib driver 2025.0.3
-ReduxLib 2025.0.1: Java API and native drivers
+Versions:
+  GradleRIO / WPILib / WPILib New Commands: 2026.2.1
+  REVLib Java and all three native drivers: 2026.0.5
+  ReduxLib Java and ReduxLib-fifo native driver: 2026.1.2
+  EJML: 0.44.0; Jackson: 2.19.2; Quickbuf: 1.4
+  Gradle wrapper: 8.11; Java source, API, and bytecode target: 17
 
-WPILib and OpenCV archives/POMs were copied unchanged from the WPILib 2025.3.2
-installation. Their upstream repository is https://frcmaven.wpi.edu/artifactory/release/.
-REVLib artifacts were copied unchanged from Gradle's downloaded vendor cache.
-Their upstream repository is https://maven.revrobotics.com/.
-Each WPILib/OpenCV/REV archive retains its original license and any third-party
-notices. WPILib and REV native archives here target linuxathena (roboRIO release).
-Desktop and native debug variants of those libraries use the normal WPILib/vendor
-repositories. The project's wpi.java.debugJni = false selects release natives.
+Some upstream dependencies intentionally retain older years in their names:
+  OpenCV 4.10.0-3 uses the frc2025 Maven group.
+  DeployUtils remains 2025.2.0.
+  The roboRIO Java 17 runtime is roborio-2024:17.0.9u7-3.
+These are the versions selected by GradleRIO 2026.2.1, not stale robot libraries.
 
-ReduxLib provenance:
+Release native libraries are bundled for roboRIO (linuxathena), macOS
+(osxuniversal), and Windows (windowsx86-64). Redux additionally includes debug
+drivers and Linux desktop drivers for all platforms in its 2026 vendordep.
+Release GUI/Driver Station simulation libraries are included for macOS and
+Windows because WPILib also loads these dependencies when running unit tests.
+Native debug variants resolve from the normal repositories and require downloads
+before offline use. Full offline build/test support covers macOS and Windows;
+Linux desktop build/test support requires extending the native artifact bundle.
+wpi.java.debugJni = false selects release natives for builds and tests.
+The vendor C++ APIs are not bundled because this is a Java project.
 
-Upstream manifest: https://frcsdk.reduxrobotics.com/ReduxLib_2025.json
-Artifact repository: https://maven.reduxrobotics.com/
-Artifact URLs are the repository URL followed by their path below this directory.
-SHA256SUMS records the bundled files' SHA-256 checksums.
+Provenance:
+  WPILib: https://frcmaven.wpi.edu/artifactory/release/
+  Gradle plugins: https://plugins.gradle.org/m2/
+  General Java dependencies: https://repo.maven.apache.org/maven2/
+  REVLib: https://maven.revrobotics.com/
+    Manifest: https://software-metadata.revrobotics.com/REVLib-2026.json
+  ReduxLib: https://maven.reduxrobotics.com/
+    Manifest: https://frcsdk.reduxrobotics.com/ReduxLib_2026.json
+    Source: https://github.com/Redux-Robotics/canandrepo-public
+Artifacts were downloaded from these repositories or copied unchanged from
+Gradle's cache. Repository URLs followed by the relative paths in this directory
+identify the original artifacts. SHA256SUMS covers every bundled file except
+itself. Archives retain their upstream licenses and third-party notices.
 
-The ReduxLib Java library and sources are covered by LICENSE.txt. ReduxLib native
-drivers are covered by LICENSE-driver.txt; their archives also contain the license.
-ReduxLib release and debug drivers include roboRIO and every desktop platform in
-its vendordep manifest. Its C++ API is not bundled because this is a Java project.
+ReduxLib Java is covered by Mozilla Public License 2.0 (LICENSE.txt); its matching
+sources JAR is included. ReduxLib-fifo is covered by LGPL 3.0 (LICENSE-driver.txt),
+also included inside the native archives. Its source is in the upstream
+canandrepo-public repository's reduxfifo directory.
 
-When changing dependency versions, update the Gradle/vendordep versions, bundled
-artifacts, build.gradle repository filters, .gitignore exceptions, and checksums
-together. Verify with ./gradlew verifyOfflineRoboRio --offline.
-The deployment computer still needs its WPILib/Java/Gradle toolchain installed.
+When changing versions, update Gradle/vendordep versions, bundled artifacts,
+repository filters, and checksums together. Validate using Java 17:
+  ./gradlew clean build --offline
+  ./gradlew verifyOfflineDependencies --offline
+  cd vendordeps/maven && shasum -a 256 -c SHA256SUMS
+The deployment computer still needs its WPILib 2026 / Java 17 / Gradle 8.11
+toolchain installed; the Gradle distribution itself is not bundled here.
+
+Hardware checks are separate from build compatibility: confirm the roboRIO image,
+use 2026 SPARK firmware with REVLib 2026, and configure the robot's measured
+dimensions, gear ratios, device IDs, and encoder directions before driving.

@@ -1,0 +1,100 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.ejml",
+    "module": "ejml-core",
+    "version": "0.44.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.12.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ejml-core-0.44.0.jar",
+          "url": "ejml-core-0.44.0.jar",
+          "size": 269471,
+          "sha512": "c3458538062336febc7aae35348694a44fe89db283960cafd8b2585e3e3962466e5d371af0d13f7baa68ba677118f8f04b245c8a0ac4d0e29bd7fa224819cea4",
+          "sha256": "96d0b9c5c521a0bcfe9a7f6753020fb32a918f4ec733afba336e9298a351af58",
+          "sha1": "2450d402658e7907afa5fcf6c10b1ca2d9f30174",
+          "md5": "b28119e98590cd0181c1a494443a6c4d"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-core-0.44.0.jar",
+          "url": "ejml-core-0.44.0.jar",
+          "size": 269471,
+          "sha512": "c3458538062336febc7aae35348694a44fe89db283960cafd8b2585e3e3962466e5d371af0d13f7baa68ba677118f8f04b245c8a0ac4d0e29bd7fa224819cea4",
+          "sha256": "96d0b9c5c521a0bcfe9a7f6753020fb32a918f4ec733afba336e9298a351af58",
+          "sha1": "2450d402658e7907afa5fcf6c10b1ca2d9f30174",
+          "md5": "b28119e98590cd0181c1a494443a6c4d"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-core-0.44.0-javadoc.jar",
+          "url": "ejml-core-0.44.0-javadoc.jar",
+          "size": 819342,
+          "sha512": "1b220e3442cdee74e48be382ada49573d95ef41d20f46d832bcfc017c345071fc50e70e7abd1b9ac12c85281fd5ed98d052ccaf92a2714720623a3913c0fa9df",
+          "sha256": "fb8d00a7c774ba1ed7d8fd022eb2246360dc9e53f7d26990ff5ea94dd2007d9b",
+          "sha1": "3c797c268aef272ce0c906d85627ea91ac46f57a",
+          "md5": "f6b5a90b2268fb8a286d7ddb8dcbbb95"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-core-0.44.0-sources.jar",
+          "url": "ejml-core-0.44.0-sources.jar",
+          "size": 246553,
+          "sha512": "2607ef102b9e0e69f28f9e0daf1fbf91b2f84221c9b84d684df677d6be89f5b68b9cd36b6412103324893f8cbcb4a0e39a4c235dcb4dd269624e2033af020e5b",
+          "sha256": "8ac1f61efcc3a97f1c930026094bd3a243101a45980d9523bc58fd2e06b704f3",
+          "sha1": "b61bbe0a97eaa29b248ab7808bcfe974157ebe54",
+          "md5": "e65b8ac4025824be29be52f3c2a9734e"
+        }
+      ]
+    }
+  ]
+}

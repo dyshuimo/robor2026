@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "edu.wpi.first.GradleRIO" version "2026.2.1"
 }
 
 java {
@@ -9,12 +9,12 @@ java {
 }
 
 // Build, test, and release deployment dependencies are bundled for offline use.
-// Native debug and GUI simulation variants still use their normal repositories.
+// Native debug variants still use their normal repositories.
 def bundledDependencies = repositories.maven {
     name = "bundledDependencies"
     url = uri("vendordeps/maven")
     content {
-        notForConfigurations("roborioDebug", "nativeDebug", "simulationDebug", "simulationRelease")
+        notForConfigurations("roborioDebug", "nativeDebug", "simulationDebug")
     }
 }
 repositories.remove(bundledDependencies)
@@ -110,11 +110,16 @@ deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
 
-// Check every deployment native dependency, including WPILib and vendor libraries.
+// Check image support and every deployment native dependency, including vendor libraries.
 def verifyOfflineRoboRio = tasks.register("verifyOfflineRoboRio") {
     group = "verification"
-    description = "Verify all release roboRIO native libraries resolve from the project bundle."
+    description = "Verify roboRIO 2026_v1.2 support and bundled release native libraries."
     doLast {
+        def targetImage = "2026_v1.2"
+        def supportedImages = edu.wpi.first.gradlerio.wpi.WPIExtension.getValidImageVersions()
+        if (!supportedImages.contains(targetImage)) {
+            throw new GradleException("GradleRIO does not support target roboRIO image ${targetImage}.")
+        }
         def bundle = file("vendordeps/maven").canonicalFile.toPath()
         def archives = configurations.roborioRelease.files
         if (archives.empty) {
@@ -126,7 +131,7 @@ def verifyOfflineRoboRio = tasks.register("verifyOfflineRoboRio") {
                     "Update vendordeps/maven and its repository filter before offline deployment.")
             }
         }
-        logger.lifecycle("Verified ${archives.size()} bundled roboRIO native libraries.")
+        logger.lifecycle("Verified ${targetImage} support and ${archives.size()} bundled roboRIO native libraries.")
     }
 }
 def verifyOfflineDependencies = tasks.register("verifyOfflineDependencies") {
@@ -136,7 +141,7 @@ def verifyOfflineDependencies = tasks.register("verifyOfflineDependencies") {
     doLast {
         def bundle = file("vendordeps/maven").canonicalFile.toPath()
         def names = ["compileClasspath", "runtimeClasspath", "annotationProcessor",
-            "testCompileClasspath", "testRuntimeClasspath", "nativeRelease"]
+            "testCompileClasspath", "testRuntimeClasspath", "nativeRelease", "simulationRelease"]
         configurations.findAll {
             it.canBeResolved && it.name.toLowerCase().startsWith("jre")
         }.each { names.add(it.name) }
@@ -158,5 +163,6 @@ tasks.named("check") { dependsOn(verifyOfflineDependencies) }
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    options.release = 17
     options.compilerArgs.add '-XDstringConcat=inline'
 }

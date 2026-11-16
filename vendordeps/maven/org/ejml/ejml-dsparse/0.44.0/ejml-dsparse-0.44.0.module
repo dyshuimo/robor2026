@@ -1,0 +1,132 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.ejml",
+    "module": "ejml-dsparse",
+    "version": "0.44.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.12.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.ejml",
+          "module": "ejml-core",
+          "version": {
+            "requires": "0.44.0"
+          }
+        },
+        {
+          "group": "org.ejml",
+          "module": "ejml-ddense",
+          "version": {
+            "requires": "0.44.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ejml-dsparse-0.44.0.jar",
+          "url": "ejml-dsparse-0.44.0.jar",
+          "size": 96052,
+          "sha512": "d49ee62524aa0202231aec079ecf055aaa3f0c52e470abcf766018399ca9400003c2f333adf44af34e96027e875a94a5b9724cf6812c531b7c143deee7635264",
+          "sha256": "73a98b7dc33b1e16054467d1590dbb3ccc4140f74d234362353bc821502a5072",
+          "sha1": "6213b72811a9e41d8fdd94e4a578fa7002ae1add",
+          "md5": "04ff7e85b6c52775e3c64d7218c10b55"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.ejml",
+          "module": "ejml-core",
+          "version": {
+            "requires": "0.44.0"
+          }
+        },
+        {
+          "group": "org.ejml",
+          "module": "ejml-ddense",
+          "version": {
+            "requires": "0.44.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ejml-dsparse-0.44.0.jar",
+          "url": "ejml-dsparse-0.44.0.jar",
+          "size": 96052,
+          "sha512": "d49ee62524aa0202231aec079ecf055aaa3f0c52e470abcf766018399ca9400003c2f333adf44af34e96027e875a94a5b9724cf6812c531b7c143deee7635264",
+          "sha256": "73a98b7dc33b1e16054467d1590dbb3ccc4140f74d234362353bc821502a5072",
+          "sha1": "6213b72811a9e41d8fdd94e4a578fa7002ae1add",
+          "md5": "04ff7e85b6c52775e3c64d7218c10b55"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-dsparse-0.44.0-javadoc.jar",
+          "url": "ejml-dsparse-0.44.0-javadoc.jar",
+          "size": 239138,
+          "sha512": "95fddd09f36caacb96053acf3d8ecf8be3522c613a6e75da80733c5ca0b4abbf227422076e38bc13abc1e7da20f2120170a10501e17932459d9453a856d2ec73",
+          "sha256": "661d3a12c4cf59bd859c2ba93fae185cb26967318bd1ab8b88c66081e65ab4f3",
+          "sha1": "62c2be137538cd987116920f81247245c01383b7",
+          "md5": "e80e141de82ea11b4b943600fc2d196a"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-dsparse-0.44.0-sources.jar",
+          "url": "ejml-dsparse-0.44.0-sources.jar",
+          "size": 82167,
+          "sha512": "a3683336606b8d724b516b6329a2aa43cfa8d37aa04af32b4170f5e165646a75fc06c03596036af587fb0270b0d4cb1d9252095b5d1d1627dd93bd83f00e454e",
+          "sha256": "c5039bad755ef80420000d15e33d940e0dda17f7ede9d8c897235c5e94717f95",
+          "sha1": "b4437d7e76987707f8cbd69448e1af1c2d0df054",
+          "md5": "e2070fe7e87ebc1afefbf915554c1f73"
+        }
+      ]
+    }
+  ]
+}

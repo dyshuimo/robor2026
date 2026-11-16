@@ -1,0 +1,118 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.ejml",
+    "module": "ejml-zdense",
+    "version": "0.44.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.12.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.ejml",
+          "module": "ejml-core",
+          "version": {
+            "requires": "0.44.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ejml-zdense-0.44.0.jar",
+          "url": "ejml-zdense-0.44.0.jar",
+          "size": 87006,
+          "sha512": "ff95c293bde56ec5fdda6d3fa70ff7cfdbdca65639782e3c99899ca635183a4b360f2d5ce5a56319b630a0e277d721b17e974463029f8298bd82e8386aaeead0",
+          "sha256": "25c6f031e9e8c71307c77bfafff8c33cc06e76c7525fa6e97f2aa492a6cf1465",
+          "sha1": "57c4e5f8ec51688b58bb5e63b3b5f335de91ef31",
+          "md5": "12c09f66532df1a0aa5998035425bb1c"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.ejml",
+          "module": "ejml-core",
+          "version": {
+            "requires": "0.44.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ejml-zdense-0.44.0.jar",
+          "url": "ejml-zdense-0.44.0.jar",
+          "size": 87006,
+          "sha512": "ff95c293bde56ec5fdda6d3fa70ff7cfdbdca65639782e3c99899ca635183a4b360f2d5ce5a56319b630a0e277d721b17e974463029f8298bd82e8386aaeead0",
+          "sha256": "25c6f031e9e8c71307c77bfafff8c33cc06e76c7525fa6e97f2aa492a6cf1465",
+          "sha1": "57c4e5f8ec51688b58bb5e63b3b5f335de91ef31",
+          "md5": "12c09f66532df1a0aa5998035425bb1c"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-zdense-0.44.0-javadoc.jar",
+          "url": "ejml-zdense-0.44.0-javadoc.jar",
+          "size": 255254,
+          "sha512": "f116ac4d9ea2cb867bb7b96bff4761b50042db22db02594a2f26f22913cf46aa1583e2a067172eb9a3fb4517bc1812bf1931990dba2602d8a1603ca45218a1d8",
+          "sha256": "caa72fec9a895184001881ecc036440dd5339b1a47fc69b38490dfad60be324e",
+          "sha1": "d4ea4b5bdd24eb6ef8b4bb2534191cf25ca67d5c",
+          "md5": "cd073968485b4c7d85e7370a9c4c2afa"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ejml-zdense-0.44.0-sources.jar",
+          "url": "ejml-zdense-0.44.0-sources.jar",
+          "size": 76496,
+          "sha512": "a5ffbd5804fdcd96b90895262924c5704db92fe82bdabe8a26d108c91d9d1b4d8889a06e6a5bb997d31055bec2a05ccc86ce28621be4568efa866aed5929a315",
+          "sha256": "0e056ffcbe973975620667522a3f84c2bd7b037ce8c587f06870440251935170",
+          "sha1": "6842a05bcca8f9898188102f1ea2b7bdf975e0ed",
+          "md5": "be827f6dd0b24cd8ef34fc36714b695d"
+        }
+      ]
+    }
+  ]
+}
