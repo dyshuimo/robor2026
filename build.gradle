@@ -8,22 +8,17 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-// Keep ReduxLib available when deploying over the robot network without internet.
-// Bundle both the Java API and native drivers; the gyro needs both at runtime.
-repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "bundledReduxLib"
-                url = uri("vendordeps/maven")
-            }
-        }
-        filter {
-            includeVersion("com.reduxrobotics.frc", "ReduxLib-java", "2025.0.1")
-            includeVersion("com.reduxrobotics.frc", "ReduxLib-driver", "2025.0.1")
-        }
+// Build, test, and release deployment dependencies are bundled for offline use.
+// Native debug and GUI simulation variants still use their normal repositories.
+def bundledDependencies = repositories.maven {
+    name = "bundledDependencies"
+    url = uri("vendordeps/maven")
+    content {
+        notForConfigurations("roborioDebug", "nativeDebug", "simulationDebug", "simulationRelease")
     }
 }
+repositories.remove(bundledDependencies)
+repositories.addFirst(bundledDependencies)
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
@@ -114,6 +109,51 @@ jar {
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
+
+// Check every deployment native dependency, including WPILib and vendor libraries.
+def verifyOfflineRoboRio = tasks.register("verifyOfflineRoboRio") {
+    group = "verification"
+    description = "Verify all release roboRIO native libraries resolve from the project bundle."
+    doLast {
+        def bundle = file("vendordeps/maven").canonicalFile.toPath()
+        def archives = configurations.roborioRelease.files
+        if (archives.empty) {
+            throw new GradleException("No roboRIO native libraries were resolved.")
+        }
+        archives.each { archive ->
+            if (!archive.canonicalFile.toPath().startsWith(bundle)) {
+                throw new GradleException("Missing from offline bundle: ${archive.name}. " +
+                    "Update vendordeps/maven and its repository filter before offline deployment.")
+            }
+        }
+        logger.lifecycle("Verified ${archives.size()} bundled roboRIO native libraries.")
+    }
+}
+def verifyOfflineDependencies = tasks.register("verifyOfflineDependencies") {
+    group = "verification"
+    description = "Verify build, test, and release deployment dependencies are bundled."
+    dependsOn(verifyOfflineRoboRio)
+    doLast {
+        def bundle = file("vendordeps/maven").canonicalFile.toPath()
+        def names = ["compileClasspath", "runtimeClasspath", "annotationProcessor",
+            "testCompileClasspath", "testRuntimeClasspath", "nativeRelease"]
+        configurations.findAll {
+            it.canBeResolved && it.name.toLowerCase().startsWith("jre")
+        }.each { names.add(it.name) }
+        def resolved = names.collectEntries { [(it): configurations.getByName(it).files] }
+        resolved["buildscript"] = project.buildscript.configurations.classpath.files
+        resolved.each { name, artifacts ->
+            artifacts.each { artifact ->
+                if (!artifact.canonicalFile.toPath().startsWith(bundle)) {
+                    throw new GradleException("${name} uses an unbundled dependency: ${artifact.name}. " +
+                        "Add it to vendordeps/maven before offline deployment.")
+                }
+            }
+            logger.lifecycle("Verified ${name}: ${artifacts.size()} bundled artifacts.")
+        }
+    }
+}
+tasks.named("check") { dependsOn(verifyOfflineDependencies) }
 
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {

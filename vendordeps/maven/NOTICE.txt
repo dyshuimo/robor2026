@@ -1,18 +1,38 @@
-ReduxLib 2025.0.1 offline artifacts
+Offline robot deployment dependencies
 
-These unmodified vendor artifacts support this Java project's CANandgyro
-integration without downloading ReduxLib during a build or deployment.
-build.gradle resolves this version's Java API and native drivers from here.
+These unmodified artifacts provide every native library in this Java project's
+roborioRelease configuration, plus the ReduxLib Java API and desktop drivers.
+build.gradle prefers this repository for roboRIO release natives. Its
+verifyOfflineRoboRio task checks that every release native resolves from here;
+the normal build/check tasks also run that verification.
+
+WPILib 2025.3.2: hal, wpimath, ntcore, cscore, wpinet, wpiutil, and apriltag
+OpenCV 4.10.0-3: WPILib's frc2025 build
+REVLib driver 2025.0.3
+ReduxLib 2025.0.1: Java API and native drivers
+
+WPILib and OpenCV archives/POMs were copied unchanged from the WPILib 2025.3.2
+installation. Their upstream repository is https://frcmaven.wpi.edu/artifactory/release/.
+REVLib artifacts were copied unchanged from Gradle's downloaded vendor cache.
+Their upstream repository is https://maven.revrobotics.com/.
+Each WPILib/OpenCV/REV archive retains its original license and any third-party
+notices. WPILib and REV native archives here target linuxathena (roboRIO release).
+Desktop and native debug variants of those libraries use the normal WPILib/vendor
+repositories. The project's wpi.java.debugJni = false selects release natives.
+
+ReduxLib provenance:
 
 Upstream manifest: https://frcsdk.reduxrobotics.com/ReduxLib_2025.json
 Artifact repository: https://maven.reduxrobotics.com/
 Artifact URLs are the repository URL followed by their path below this directory.
 SHA256SUMS records the bundled files' SHA-256 checksums.
 
-The Java library and sources are covered by LICENSE.txt. Native drivers are
-covered by LICENSE-driver.txt; their original archives also contain the license.
-Release and debug drivers include roboRIO (linuxathena) and every desktop platform listed in the
-vendordep manifest. The C++ API is not bundled because this is a Java project.
+The ReduxLib Java library and sources are covered by LICENSE.txt. ReduxLib native
+drivers are covered by LICENSE-driver.txt; their archives also contain the license.
+ReduxLib release and debug drivers include roboRIO and every desktop platform in
+its vendordep manifest. Its C++ API is not bundled because this is a Java project.
 
-When changing ReduxLib versions, update the vendordep manifest, bundled artifacts,
-build.gradle repository filter, .gitignore exceptions, and checksums together.
+When changing dependency versions, update the Gradle/vendordep versions, bundled
+artifacts, build.gradle repository filters, .gitignore exceptions, and checksums
+together. Verify with ./gradlew verifyOfflineRoboRio --offline.
+The deployment computer still needs its WPILib/Java/Gradle toolchain installed.

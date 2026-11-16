@@ -32,7 +32,7 @@ public final class Constants {
   // Redux Robotics Boron CANandgyro, connected over CAN.
   public enum GyroType { NOT_CONFIGURED, CANANDGYRO, ADIS16470, ADXRS450 }
   public static final GyroType GYRO_TYPE = GyroType.CANANDGYRO;
-  // TODO: Match the CAN ID assigned to the gyro in Redux Alchemist.
+
   public static final int GYRO_CAN_ID = 0;
   public static final SPI.Port GYRO_SPI_PORT = SPI.Port.kOnboardCS0;
   // With the gyro's +Z axis up, counterclockwise rotation should increase heading.

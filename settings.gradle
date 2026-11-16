@@ -2,6 +2,10 @@ import org.gradle.internal.os.OperatingSystem
 
 pluginManagement {
     repositories {
+        maven {
+            name = 'bundledBuildDependencies'
+            url = new File(settingsDir, 'vendordeps/maven')
+        }
         mavenLocal()
         gradlePluginPortal()
         String frcYear = '2025'
