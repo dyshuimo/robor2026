@@ -8,6 +8,23 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+// Keep ReduxLib available when deploying over the robot network without internet.
+// Bundle both the Java API and native drivers; the gyro needs both at runtime.
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "bundledReduxLib"
+                url = uri("vendordeps/maven")
+            }
+        }
+        filter {
+            includeVersion("com.reduxrobotics.frc", "ReduxLib-java", "2025.0.1")
+            includeVersion("com.reduxrobotics.frc", "ReduxLib-driver", "2025.0.1")
+        }
+    }
+}
+
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)

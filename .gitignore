@@ -145,6 +145,10 @@ gradle-app.setting
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
+# ReduxLib artifacts bundled for offline builds and roboRIO deployment.
+!/vendordeps/maven/com/reduxrobotics/frc/ReduxLib-java/2025.0.1/*.jar
+!/vendordeps/maven/com/reduxrobotics/frc/ReduxLib-driver/2025.0.1/*.zip
+
 # Cache of project
 .gradletasknamecache
 

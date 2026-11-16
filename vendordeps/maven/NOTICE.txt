@@ -1,0 +1,18 @@
+ReduxLib 2025.0.1 offline artifacts
+
+These unmodified vendor artifacts support this Java project's CANandgyro
+integration without downloading ReduxLib during a build or deployment.
+build.gradle resolves this version's Java API and native drivers from here.
+
+Upstream manifest: https://frcsdk.reduxrobotics.com/ReduxLib_2025.json
+Artifact repository: https://maven.reduxrobotics.com/
+Artifact URLs are the repository URL followed by their path below this directory.
+SHA256SUMS records the bundled files' SHA-256 checksums.
+
+The Java library and sources are covered by LICENSE.txt. Native drivers are
+covered by LICENSE-driver.txt; their original archives also contain the license.
+Release and debug drivers include roboRIO (linuxathena) and every desktop platform listed in the
+vendordep manifest. The C++ API is not bundled because this is a Java project.
+
+When changing ReduxLib versions, update the vendordep manifest, bundled artifacts,
+build.gradle repository filter, .gitignore exceptions, and checksums together.
