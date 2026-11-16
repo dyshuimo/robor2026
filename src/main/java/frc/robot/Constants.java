@@ -15,19 +15,19 @@ public final class Constants {
   public static final int[] STEER_CAN_IDS = {3, 6, 9, 12};
   public static final String[] MODULE_NAMES = {"FL", "FR", "BL", "BR"};
 
-  // TODO: Measure between the steering pivot centers, in meters.
-  public static final double WHEELBASE_METERS = 0.0; // Front to back.
-  public static final double TRACKWIDTH_METERS = 0.0; // Left to right.
+  
+  public static final double WHEELBASE_METERS = 0.377825; // Front to back.
+  public static final double TRACKWIDTH_METERS = 0.377825; // Left to right.
 
 
   // Example only: a 12.8:1 steering reduction would use 12.8.
   // "1650" is the NEO part number, not a gear ratio.
   public static final double STEER_GEAR_RATIO = 21.4285714286;
 
-  // TODO: Actual wheel diameter and drive motor rotations per wheel rotation.
+
   // Both are needed to measure odometry in meters.
-  public static final double WHEEL_DIAMETER_METERS = 0.0;
-  public static final double DRIVE_GEAR_RATIO = 0.0;
+  public static final double WHEEL_DIAMETER_METERS = 0.1016;
+  public static final double DRIVE_GEAR_RATIO = 6.12;
 
   // Redux Robotics Boron CANandgyro, connected over CAN.
   public enum GyroType { NOT_CONFIGURED, CANANDGYRO, ADIS16470, ADXRS450 }
