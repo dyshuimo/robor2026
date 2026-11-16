@@ -29,11 +29,13 @@ public final class Constants {
   public static final double WHEEL_DIAMETER_METERS = 0.0;
   public static final double DRIVE_GEAR_RATIO = 0.0;
 
-  // Select your installed sensor. No gyro model has been provided yet.
-  // Pigeon/navX need their own vendor library and an adapter in RobotGyro.java.
-  public enum GyroType { NOT_CONFIGURED, ADIS16470, ADXRS450 }
-  public static final GyroType GYRO_TYPE = GyroType.NOT_CONFIGURED;
+  // Redux Robotics Boron CANandgyro, connected over CAN.
+  public enum GyroType { NOT_CONFIGURED, CANANDGYRO, ADIS16470, ADXRS450 }
+  public static final GyroType GYRO_TYPE = GyroType.CANANDGYRO;
+  // TODO: Match the CAN ID assigned to the gyro in Redux Alchemist.
+  public static final int GYRO_CAN_ID = 0;
   public static final SPI.Port GYRO_SPI_PORT = SPI.Port.kOnboardCS0;
+  // With the gyro's +Z axis up, counterclockwise rotation should increase heading.
   public static final boolean GYRO_REVERSED = false;
 
   // Check each module on blocks. Positive drive must roll the robot forward
