@@ -119,6 +119,30 @@ public class SwerveModule {
     return new SwerveModulePosition(meters, new Rotation2d(angle));
   }
 
+  /** Steer to the calibrated forward direction; return true once within tolerance. */
+  public boolean pointForward() {
+    driveMotor.stopMotor();
+    if (!isReady()) {
+      stop();
+      return false;
+    }
+    double currentAngle = getAngleRadians();
+    if (!Double.isFinite(currentAngle) || steerMotor.getLastError() != REVLibError.kOk) {
+      zeroed = false;
+      stop();
+      return false;
+    }
+    // Do not optimize by 180 degrees: startup requires the actual forward direction.
+    double error = MathUtil.angleModulus(-currentAngle);
+    if (Math.abs(error) <= Constants.STEER_ALIGNMENT_TOLERANCE_RADIANS) {
+      steerMotor.stopMotor();
+      return true;
+    }
+    steerMotor.set(MathUtil.clamp(
+        Constants.STEER_KP * error, -Constants.MAX_STEER_OUTPUT, Constants.MAX_STEER_OUTPUT));
+    return false;
+  }
+
   public void setDesiredState(double speed, double targetAngle) {
     if (!isReady() || Math.abs(speed) < 0.001) {
       // Avoid steering jitter when the sticks are centered.

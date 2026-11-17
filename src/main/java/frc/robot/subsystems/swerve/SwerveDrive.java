@@ -49,6 +49,20 @@ public class SwerveDrive {
     }
   }
 
+  /** Call each loop until all wheels face robot-forward, with drive motors stopped. */
+  public boolean pointWheelsForward() {
+    if (!isReady()) {
+      stop();
+      return false;
+    }
+    boolean aligned = true;
+    for (SwerveModule module : modules) {
+      // Update every module even if an earlier one is still turning.
+      aligned &= module.pointForward();
+    }
+    return aligned;
+  }
+
   // Speed here is a normalized motor request, NOT meters per second.
   public record WheelRequest(double speed, double angleRadians) {}
 

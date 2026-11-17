@@ -52,6 +52,7 @@ public final class Constants {
   public static final double MAX_DRIVE_OUTPUT = 0.20;
   public static final double MAX_STEER_OUTPUT = 0.20;
   public static final double STEER_KP = 0.50; // Motor output per radian of error.
+  public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = Math.toRadians(2.0);
   public static final int DRIVE_CURRENT_LIMIT_AMPS = 40;
   public static final int STEER_CURRENT_LIMIT_AMPS = 20;
 
