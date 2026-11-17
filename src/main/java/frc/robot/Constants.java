@@ -13,16 +13,20 @@ public final class Constants {
   // Rear IDs are inferred from your front module numbering. Verify them.
   public static final int[] DRIVE_CAN_IDS = {1, 4, 7, 10};
   public static final int[] STEER_CAN_IDS = {3, 6, 9, 12};
+  // Each CANcoder has its own ID, independent of the SPARK MAX IDs.
+  // Fill these from Phoenix Tuner X; -1 deliberately means unknown.
+  public static final int[] CANCODER_CAN_IDS = {-1, -1, -1, -1};
+  // CANcoder absolute reading (rotations) with each module physically facing forward.
+  // Use 0 only if forward has already been calibrated to zero in Phoenix Tuner.
+  // These offsets are applied in software; existing device configuration is preserved.
+  public static final double[] CANCODER_FORWARD_ROTATIONS = {
+      Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+  public static final double CANCODER_MAX_AGE_SECONDS = 0.10;
   public static final String[] MODULE_NAMES = {"FL", "FR", "BL", "BR"};
 
   
   public static final double WHEELBASE_METERS = 0.377825; // Front to back.
   public static final double TRACKWIDTH_METERS = 0.377825; // Left to right.
-
-
-  // Example only: a 12.8:1 steering reduction would use 12.8.
-  // "1650" is the NEO part number, not a gear ratio.
-  public static final double STEER_GEAR_RATIO = 21.4285714286;
 
 
   // Both are needed to measure odometry in meters.
@@ -42,7 +46,7 @@ public final class Constants {
   // when zeroed. Positive steer must turn the module counterclockwise from above.
   public static final boolean[] DRIVE_INVERTED = {false, false, false, false};
   public static final boolean[] STEER_INVERTED = {false, false, false, false};
-  // Independently check the sensor: counterclockwise module motion must INCREASE
+  // CANcoder direction: counterclockwise module motion must INCREASE
   // the dashboard angle. Use -1.0 for any encoder that reports the opposite sign.
   public static final double[] STEER_ENCODER_SIGN = {1.0, 1.0, 1.0, 1.0};
   // Positive distance must mean rolling FORWARD in the module's zero direction.
@@ -59,7 +63,6 @@ public final class Constants {
   public static boolean hardwareConfigured() {
     return positive(WHEELBASE_METERS)
         && positive(TRACKWIDTH_METERS)
-        && positive(STEER_GEAR_RATIO)
         && positive(WHEEL_DIAMETER_METERS)
         && positive(DRIVE_GEAR_RATIO);
   }

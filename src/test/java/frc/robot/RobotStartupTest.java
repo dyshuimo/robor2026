@@ -21,11 +21,17 @@ class RobotStartupTest {
 
     // Constructing Robot loads both the REV and Redux native libraries.
     try (Robot robot = new Robot()) {
+      robot.robotInit();
       robot.disabledInit();
       robot.robotPeriodic();
       robot.disabledPeriodic();
 
-      // Missing gyro/module references must prevent the drivetrain becoming ready.
+      // No CANcoder configuration/data must never masquerade as a forward module.
+      for (String module : Constants.MODULE_NAMES) {
+        assertFalse(SmartDashboard.getBoolean("Swerve/" + module + "/Zeroed", true));
+        assertFalse(SmartDashboard.getBoolean("Swerve/" + module + "/Encoder healthy", true));
+      }
+      // A missing gyro must still prevent the drivetrain becoming ready.
       assertFalse(SmartDashboard.getBoolean("Swerve/Ready", true));
 
       DriverStationSim.setJoystickAxisCount(Constants.PS4_PORT, 6);

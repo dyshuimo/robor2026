@@ -7,36 +7,64 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import java.util.Arrays;
 
 /** Field-centric swerve: measured odometry, open-loop drive, proportional steering. */
 public class SwerveDrive {
-  private final SwerveModule[] modules = new SwerveModule[4];
-  private final RobotGyro gyro = new RobotGyro();
+  private final SwerveModule[] modules;
+  private final RobotGyro gyro;
   private final SwervePoseTracker poseTracker;
   private final Field2d field = new Field2d();
   private Rotation2d rawHeading = new Rotation2d();
   private final SwerveModulePosition[] positions = new SwerveModulePosition[4];
   private boolean sensorsReady;
+  private boolean poseResetPending;
+  private boolean aligningForTeleop;
 
   public SwerveDrive() {
-    for (int i = 0; i < modules.length; i++) {
-      modules[i] = new SwerveModule(
-          Constants.MODULE_NAMES[i], Constants.DRIVE_CAN_IDS[i], Constants.STEER_CAN_IDS[i],
-          Constants.DRIVE_INVERTED[i], Constants.STEER_INVERTED[i], Constants.STEER_ENCODER_SIGN[i],
-          Constants.DRIVE_ENCODER_SIGN[i]);
-    }
+    this(new RobotGyro(), createModules());
+  }
+
+  SwerveDrive(RobotGyro gyro, SwerveModule[] modules) {
+    this.gyro = gyro;
+    this.modules = modules;
     poseTracker = Constants.hardwareConfigured()
         ? new SwervePoseTracker(Constants.WHEELBASE_METERS, Constants.TRACKWIDTH_METERS) : null;
     SmartDashboard.putData("Swerve/Field", field);
     if (!Constants.hardwareConfigured()) {
       DriverStation.reportWarning(
-          "Swerve: set wheelbase, trackwidth, wheel diameter, and both gear ratios in Constants.java.",
+          "Swerve: set wheelbase, trackwidth, wheel diameter, and drive gear ratio in Constants.java.",
           false);
     }
   }
 
+  private static SwerveModule[] createModules() {
+    SwerveModule[] modules = new SwerveModule[4];
+    for (int i = 0; i < modules.length; i++) {
+      modules[i] = new SwerveModule(
+          Constants.MODULE_NAMES[i], Constants.DRIVE_CAN_IDS[i], Constants.STEER_CAN_IDS[i],
+          Constants.DRIVE_INVERTED[i], Constants.STEER_INVERTED[i], Constants.DRIVE_ENCODER_SIGN[i],
+          validEncoderId(i), Constants.CANCODER_FORWARD_ROTATIONS[i], Constants.STEER_ENCODER_SIGN[i]);
+    }
+    return modules;
+  }
+
+  private static int validEncoderId(int index) {
+    int id = Constants.CANCODER_CAN_IDS[index];
+    for (int i = 0; i < Constants.CANCODER_CAN_IDS.length; i++) {
+      if (i != index && Constants.CANCODER_CAN_IDS[i] == id) {
+        return -1; // Duplicate CANcoder IDs cannot identify individual modules.
+      }
+    }
+    return id;
+  }
+
   /** Inputs -1 to +1: FIELD forward, FIELD left, and counterclockwise spin. */
   public void drive(double forward, double left, double turn) {
+    if (aligningForTeleop) {
+      finishTeleopAlignment();
+      return;
+    }
     if (!isReady()) {
       stop();
       return;
@@ -49,9 +77,22 @@ public class SwerveDrive {
     }
   }
 
+  /** Start each Teleop with stopped drive motors and all wheels pointing forward. */
+  public void prepareForTeleop() {
+    aligningForTeleop = true;
+    resetOdometry();
+    finishTeleopAlignment();
+  }
+
+  private void finishTeleopAlignment() {
+    // Physical steering takes multiple loops; never block the robot main loop waiting for it.
+    aligningForTeleop = !pointWheelsForward();
+    updateDashboard();
+  }
+
   /** Call each loop until all wheels face robot-forward, with drive motors stopped. */
   public boolean pointWheelsForward() {
-    if (!isReady()) {
+    if (!hasValidPose()) {
       stop();
       return false;
     }
@@ -99,24 +140,38 @@ public class SwerveDrive {
     return requests;
   }
 
-  public void zeroSteering() {
-    // Keep calibration impossible while enabled, even if called elsewhere later.
-    if (!DriverStation.isDisabled() || !Constants.hardwareConfigured()) {
-      return;
-    }
+  /** Reset software state and drive travel; preserve each calibrated absolute steering reference. */
+  public void resetForStartup() {
     stop();
     for (SwerveModule module : modules) {
-      module.zeroSteering();
+      module.resetForStartup();
     }
+    rawHeading = new Rotation2d();
+    Arrays.fill(positions, null);
     sensorsReady = false;
-    poseTracker.invalidate();
+    poseResetPending = true;
+    aligningForTeleop = false;
+    if (poseTracker != null) {
+      poseTracker.clear();
+    }
+    updateDashboard();
   }
 
   /** Called every robot loop, including while disabled and with centered sticks. */
   public void periodic() {
+    // Initialize modules even while the gyro is disconnected or still calibrating.
+    for (SwerveModule module : modules) {
+      module.refreshSensors();
+      module.initializeStartup();
+    }
     sensorsReady = readSensors();
     if (sensorsReady) {
-      poseTracker.update(rawHeading, positions);
+      if (poseResetPending) {
+        poseTracker.reset(rawHeading, positions);
+        poseResetPending = false;
+      } else {
+        poseTracker.update(rawHeading, positions);
+      }
     } else {
       if (poseTracker != null) {
         poseTracker.invalidate();
@@ -129,21 +184,13 @@ public class SwerveDrive {
   /** Triangle: make the current position (0,0) and current facing field-forward. */
   public void resetOdometry() {
     stop();
-    sensorsReady = readSensors();
-    if (sensorsReady) {
-      poseTracker.reset(rawHeading, positions);
-      updateDashboard();
-    } else {
-      if (poseTracker != null) {
-        poseTracker.invalidate();
-      }
-      DriverStation.reportWarning(
-          "Cannot reset pose: configure hardware, connect the gyro, and zero steering first.", false);
-    }
+    // Complete automatically once sensors are available; no startup button press is needed.
+    poseResetPending = true;
+    periodic();
   }
 
   private boolean readSensors() {
-    if (!Constants.hardwareConfigured() || !gyro.isConnected()) {
+    if (!Constants.hardwareConfigured()) {
       return false;
     }
     boolean modulesReady = true;
@@ -151,7 +198,7 @@ public class SwerveDrive {
       modulesReady &= module.isReady();
     }
     double headingRadians = gyro.getHeadingRadians();
-    if (!modulesReady || !Double.isFinite(headingRadians)) {
+    if (!modulesReady || !gyro.isConnected() || !Double.isFinite(headingRadians)) {
       return false;
     }
     rawHeading = new Rotation2d(headingRadians);
@@ -165,6 +212,10 @@ public class SwerveDrive {
   }
 
   private boolean isReady() {
+    return hasValidPose() && !aligningForTeleop;
+  }
+
+  private boolean hasValidPose() {
     return sensorsReady && poseTracker != null && poseTracker.isReady();
   }
 
@@ -178,6 +229,8 @@ public class SwerveDrive {
     SmartDashboard.putBoolean("Swerve/Hardware configured", Constants.hardwareConfigured());
     SmartDashboard.putBoolean("Swerve/Gyro connected", gyro.isConnected());
     SmartDashboard.putBoolean("Swerve/Ready", isReady());
+    SmartDashboard.putString("Swerve/State", !sensorsReady ? "WAITING_FOR_SENSORS"
+        : !hasValidPose() ? "RESET_REQUIRED" : aligningForTeleop ? "ALIGNING" : "READY");
     Pose2d pose = poseTracker == null ? new Pose2d() : poseTracker.getPose();
     SmartDashboard.putNumber("Swerve/X meters", pose.getX());
     SmartDashboard.putNumber("Swerve/Y meters", pose.getY());

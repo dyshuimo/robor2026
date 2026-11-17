@@ -12,15 +12,55 @@ import org.junit.jupiter.api.Test;
 
 class SwerveModuleTest {
   @Test
+  void retriesStartupWhenEncoderDataBecomesValidAfterEnable() {
+    assertTrue(HAL.initialize(500, 0));
+    DriverStationSim.setEnabled(false);
+    DriverStationSim.notifyNewData();
+    var encoder = new TestSteeringEncoder();
+    var module = new SwerveModule("DelayedStartup", 43, 44, false, false, 1.0, encoder);
+
+    try {
+      encoder.status = AbsoluteSteeringEncoder.Status.CAN_ERROR;
+      module.resetForStartup();
+      module.refreshSensors();
+      module.initializeStartup();
+      assertFalse(module.isReady());
+      module.setDesiredState(1, 0);
+      assertEquals(0.0, new SimDeviceSim("SPARK MAX [43]").getDouble("Setpoint").get());
+
+      DriverStationSim.setEnabled(true);
+      DriverStationSim.notifyNewData();
+      encoder.status = AbsoluteSteeringEncoder.Status.OK;
+      module.refreshSensors();
+      module.initializeStartup();
+      assertTrue(module.isReady());
+      assertEquals(0.0, module.getAngleRadians(), 1e-9);
+      module.setDesiredState(1, 0);
+      assertEquals(Constants.MAX_DRIVE_OUTPUT,
+          new SimDeviceSim("SPARK MAX [43]").getDouble("Setpoint").get(), 1e-6);
+
+      encoder.status = AbsoluteSteeringEncoder.Status.STALE;
+      module.refreshSensors();
+      module.setDesiredState(1, 0);
+      assertFalse(module.isReady());
+      assertEquals(0.0, new SimDeviceSim("SPARK MAX [43]").getDouble("Setpoint").get());
+    } finally {
+      module.stop();
+      DriverStationSim.resetData();
+      DriverStationSim.notifyNewData();
+    }
+  }
+
+  @Test
   void alignsToCalibratedForwardWithDriveStopped() {
     assertTrue(HAL.initialize(500, 0));
     DriverStationSim.setEnabled(false);
     DriverStationSim.notifyNewData();
     // Separate CAN IDs from the Robot startup test.
-    var module = new SwerveModule("Test", 41, 42, false, false, 1.0, 1.0);
+    var encoder = new TestSteeringEncoder();
+    var module = new SwerveModule("Test", 41, 42, false, false, 1.0, encoder);
     var drive = new SimDeviceSim("SPARK MAX [41]").getDouble("Setpoint");
     var steer = new SimDeviceSim("SPARK MAX [42]").getDouble("Setpoint");
-    var position = new SimDeviceSim("SPARK MAX [42] RELATIVE ENCODER").getDouble("Position");
 
     try {
       // An uncalibrated module must not steer or report alignment complete.
@@ -28,37 +68,40 @@ class SwerveModuleTest {
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(0.0, steer.get(), 1e-6);
 
-      // A nonzero encoder baseline must remain the definition of forward.
-      double baseline = 3.0;
-      position.set(baseline);
-      module.zeroSteering();
+      // Startup at a nonzero absolute angle must not redefine physical forward.
+      encoder.angleRadians = Math.PI;
+      module.resetForStartup();
+      module.refreshSensors();
+      module.initializeStartup();
       assertTrue(module.isReady());
       DriverStationSim.setEnabled(true);
       DriverStationSim.notifyNewData();
 
       // Start with a drive command, then point forward from the backward direction.
-      module.setDesiredState(0.5, 0.0);
+      module.setDesiredState(0.5, Math.PI);
       assertTrue(drive.get() > 0.0);
-      position.set(baseline + Constants.STEER_GEAR_RATIO / 2.0);
       assertFalse(module.pointForward());
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(Constants.MAX_STEER_OUTPUT, Math.abs(steer.get()), 1e-6);
 
       // Repeated calls recompute steering in both directions as the angle changes.
       for (double degrees : new double[] {90.0, -90.0}) {
-        position.set(baseline + Constants.STEER_GEAR_RATIO * degrees / 360.0);
+        encoder.angleRadians = Math.toRadians(degrees);
+        module.refreshSensors();
         assertFalse(module.pointForward());
         assertTrue(steer.get() * degrees < 0.0);
         assertEquals(0.0, drive.get(), 1e-6);
       }
 
       // Forward is periodic, and a small error is accepted without steering jitter.
-      position.set(baseline + Constants.STEER_GEAR_RATIO * 361.0 / 360.0);
+      encoder.angleRadians = Math.toRadians(1.0);
+      module.refreshSensors();
       assertTrue(module.pointForward());
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(0.0, steer.get(), 1e-6);
 
-      position.set(Double.NaN);
+      encoder.angleRadians = Double.NaN;
+      module.refreshSensors();
       assertFalse(module.pointForward());
       assertFalse(module.isReady());
       assertEquals(0.0, drive.get(), 1e-6);

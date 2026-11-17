@@ -17,7 +17,11 @@ import frc.robot.subsystems.swerve.SwerveDrive;
 public class Robot extends TimedRobot {
   private final PS4Controller controller = new PS4Controller(Constants.PS4_PORT);
   private final SwerveDrive swerve = new SwerveDrive();
-  private boolean aligningWheels;
+
+  @Override
+  public void robotInit() {
+    swerve.resetForStartup();
+  }
 
   @Override
   public void robotPeriodic() {
@@ -36,20 +40,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    swerve.stop();
-    swerve.resetOdometry();
-    // Steering takes multiple loops; finish alignment before accepting drive input.
-    aligningWheels = true;
+    // Begin alignment now; subsequent Teleop loops finish it before allowing translation.
+    swerve.prepareForTeleop();
   }
 
   @Override
   public void teleopPeriodic() {
     if (!controller.isConnected()) {
       swerve.stop();
-      return;
-    }
-    if (aligningWheels) {
-      aligningWheels = !swerve.pointWheelsForward();
       return;
     }
 
@@ -64,14 +62,6 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     swerve.stop();
-  }
-
-  @Override
-  public void disabledPeriodic() {
-    // With the robot disabled, manually point ALL modules forward first.
-    if (controller.isConnected() && controller.getOptionsButtonPressed()) {
-      swerve.zeroSteering();
-    }
   }
 
   @Override

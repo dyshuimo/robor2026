@@ -41,7 +41,13 @@ public class SwervePoseTracker {
   }
 
   public void invalidate() {
-    // After losing a reference, require Triangle instead of silently moving the field frame.
+    // After losing a reference, require an explicit reset instead of moving the field frame.
+    needsReset = true;
+  }
+
+  /** Discard all pose history when the robot starts. */
+  public void clear() {
+    odometry = null;
     needsReset = true;
   }
 

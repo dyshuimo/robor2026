@@ -15,28 +15,37 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
-/** One drive motor plus one steering motor with its built-in relative encoder. */
+/** Two SPARK MAX motors, a CANcoder for azimuth, and the drive motor's travel encoder. */
 public class SwerveModule {
   private final String name;
   private final SparkMax driveMotor;
   private final SparkMax steerMotor;
-  private final RelativeEncoder steerEncoder;
+  private final AbsoluteSteeringEncoder steerEncoder;
+  private AbsoluteSteeringEncoder.Reading steering = new AbsoluteSteeringEncoder.Reading(
+      Double.NaN, Double.NaN, AbsoluteSteeringEncoder.Status.CAN_ERROR);
   private final RelativeEncoder driveEncoder;
-  private final double encoderSign;
   private final double driveEncoderSign;
   private final boolean configurationOK;
-  private double zeroMotorRotations;
+  private double zeroDriveRotations;
   private boolean zeroed;
   private boolean zeroPending;
+  private boolean startupResetPending;
 
   public SwerveModule(String name, int driveId, int steerId,
-      boolean driveInverted, boolean steerInverted, double encoderSign, double driveEncoderSign) {
+      boolean driveInverted, boolean steerInverted, double driveEncoderSign,
+      int canCoderId, double forwardRotations, double encoderSign) {
+    this(name, driveId, steerId, driveInverted, steerInverted, driveEncoderSign,
+        new CanCoderSteeringEncoder(canCoderId, forwardRotations, encoderSign));
+  }
+
+  SwerveModule(String name, int driveId, int steerId,
+      boolean driveInverted, boolean steerInverted, double driveEncoderSign,
+      AbsoluteSteeringEncoder steerEncoder) {
     this.name = name;
-    this.encoderSign = encoderSign;
+    this.steerEncoder = steerEncoder;
     this.driveEncoderSign = driveEncoderSign;
     driveMotor = new SparkMax(driveId, MotorType.kBrushless);
     steerMotor = new SparkMax(steerId, MotorType.kBrushless);
-    steerEncoder = steerMotor.getEncoder();
     driveEncoder = driveMotor.getEncoder();
 
     SparkMaxConfig driveConfig = new SparkMaxConfig();
@@ -45,11 +54,9 @@ public class SwerveModule {
     driveConfig.encoder.positionConversionFactor(1.0);
     driveConfig.signals.primaryEncoderPositionPeriodMs(20);
     SparkMaxConfig steerConfig = new SparkMaxConfig();
-    // Coast lets you align the steering by hand while disabled.
+    // Steering coasts when no output is requested.
     steerConfig.inverted(steerInverted).idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.STEER_CURRENT_LIMIT_AMPS).voltageCompensation(12.0);
-    steerConfig.encoder.positionConversionFactor(1.0); // Raw motor rotations.
-    steerConfig.signals.primaryEncoderPositionPeriodMs(20);
 
     REVLibError driveResult = driveMotor.configure(
         driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -62,47 +69,63 @@ public class SwerveModule {
     }
   }
 
-  /** Call only after physically aligning this module forward while disabled. */
-  public void zeroSteering() {
-    if (!DriverStation.isDisabled()) {
-      return;
-    }
+  /** Reset drive travel only; the calibrated CANcoder forward reference survives startup. */
+  public void resetForStartup() {
+    stop();
+    steering = new AbsoluteSteeringEncoder.Reading(
+        Double.NaN, Double.NaN, AbsoluteSteeringEncoder.Status.CAN_ERROR);
+    zeroDriveRotations = 0.0;
     zeroed = false;
     zeroPending = false;
+    startupResetPending = true;
+  }
+
+  /** Capture a coherent steering sample for this control loop. */
+  public void refreshSensors() {
+    steering = steerEncoder.read();
+  }
+
+  /** Retry initial sensor reads automatically, including if enable precedes CAN startup. */
+  public void initializeStartup() {
+    if (!startupResetPending || zeroPending || !configurationOK || !steering.valid()) {
+      return;
+    }
     stop();
     REVLibError clearResult = steerMotor.clearFaults();
     REVLibError driveClearResult = driveMotor.clearFaults();
-    double position = steerEncoder.getPosition();
-    if (configurationOK && clearResult == REVLibError.kOk && driveClearResult == REVLibError.kOk
-        && steerMotor.getLastError() == REVLibError.kOk && Double.isFinite(position)) {
-      zeroMotorRotations = position;
+    double drivePosition = driveEncoder.getPosition();
+    boolean driveOK = driveMotor.getLastError() == REVLibError.kOk;
+    if (clearResult == REVLibError.kOk && driveClearResult == REVLibError.kOk
+        && driveOK && Double.isFinite(drivePosition)) {
+      zeroDriveRotations = drivePosition;
       // Wait for a CAN status update confirming the reset warning was cleared.
       zeroPending = true;
-    } else {
-      DriverStation.reportError("Swerve " + name + ": could not zero steering encoder.", false);
     }
   }
 
   public boolean isReady() {
-    boolean hasReset = steerMotor.getStickyWarnings().hasReset
-        || driveMotor.getStickyWarnings().hasReset;
-    if (zeroPending && DriverStation.isDisabled() && !hasReset) {
+    var steerWarnings = steerMotor.getStickyWarnings();
+    boolean steerOK = steerMotor.getLastError() == REVLibError.kOk;
+    var driveWarnings = driveMotor.getStickyWarnings();
+    boolean driveOK = driveMotor.getLastError() == REVLibError.kOk;
+    if (!steerOK || !driveOK) {
+      return false;
+    }
+    boolean hasReset = steerWarnings.hasReset || driveWarnings.hasReset;
+    if (zeroPending && !hasReset) {
       zeroed = true;
       zeroPending = false;
+      startupResetPending = false;
     }
-    if (!DriverStation.isDisabled()) {
-      zeroPending = false;
-    }
-    // A controller reboot loses its relative encoder reference. Re-align and zero.
+    // A later controller reboot loses the reference; restart initialization before driving.
     if (hasReset) {
       zeroed = false;
     }
-    return configurationOK && zeroed;
+    return configurationOK && zeroed && steering.valid();
   }
 
   public double getAngleRadians() {
-    return encoderSign * (steerEncoder.getPosition() - zeroMotorRotations)
-        * 2.0 * Math.PI / Constants.STEER_GEAR_RATIO;
+    return steering.angleRadians();
   }
 
   /** Measured drive distance and steering angle for WPILib odometry. */
@@ -110,11 +133,10 @@ public class SwerveModule {
     double rotations = driveEncoder.getPosition();
     boolean driveOK = driveMotor.getLastError() == REVLibError.kOk;
     double angle = getAngleRadians();
-    boolean steerOK = steerMotor.getLastError() == REVLibError.kOk;
-    if (!driveOK || !steerOK || !Double.isFinite(rotations) || !Double.isFinite(angle)) {
+    if (!driveOK || !steering.valid() || !Double.isFinite(rotations)) {
       return null;
     }
-    double meters = driveEncoderSign * rotations
+    double meters = driveEncoderSign * (rotations - zeroDriveRotations)
         * Math.PI * Constants.WHEEL_DIAMETER_METERS / Constants.DRIVE_GEAR_RATIO;
     return new SwerveModulePosition(meters, new Rotation2d(angle));
   }
@@ -127,12 +149,12 @@ public class SwerveModule {
       return false;
     }
     double currentAngle = getAngleRadians();
-    if (!Double.isFinite(currentAngle) || steerMotor.getLastError() != REVLibError.kOk) {
+    if (!Double.isFinite(currentAngle)) {
       zeroed = false;
       stop();
       return false;
     }
-    // Do not optimize by 180 degrees: startup requires the actual forward direction.
+    // Do not optimize by 180 degrees: use the calibrated physical forward reference.
     double error = MathUtil.angleModulus(-currentAngle);
     if (Math.abs(error) <= Constants.STEER_ALIGNMENT_TOLERANCE_RADIANS) {
       steerMotor.stopMotor();
@@ -150,7 +172,7 @@ public class SwerveModule {
       return;
     }
     double currentAngle = getAngleRadians();
-    if (!Double.isFinite(currentAngle) || steerMotor.getLastError() != REVLibError.kOk) {
+    if (!Double.isFinite(currentAngle)) {
       zeroed = false;
       stop();
       return;
@@ -174,11 +196,16 @@ public class SwerveModule {
   }
 
   public void updateDashboard() {
-    SmartDashboard.putBoolean("Swerve/" + name + "/Zeroed", zeroed);
+    SmartDashboard.putBoolean("Swerve/" + name + "/Zeroed", zeroed && steering.valid());
+    SmartDashboard.putBoolean("Swerve/" + name + "/Encoder healthy", steering.valid());
+    SmartDashboard.putString("Swerve/" + name + "/Encoder status", steering.status().name());
+    SmartDashboard.putNumber("Swerve/" + name + "/Absolute rotations", steering.absoluteRotations());
+    SmartDashboard.putBoolean("Swerve/" + name + "/Aligned forward",
+        isReady() && Math.abs(getAngleRadians()) <= Constants.STEER_ALIGNMENT_TOLERANCE_RADIANS);
     if (Constants.hardwareConfigured()) {
       SmartDashboard.putNumber("Swerve/" + name + "/Angle degrees", Math.toDegrees(getAngleRadians()));
       SmartDashboard.putNumber("Swerve/" + name + "/Drive meters",
-          driveEncoderSign * driveEncoder.getPosition()
+          driveEncoderSign * (driveEncoder.getPosition() - zeroDriveRotations)
               * Math.PI * Constants.WHEEL_DIAMETER_METERS / Constants.DRIVE_GEAR_RATIO);
     }
   }
