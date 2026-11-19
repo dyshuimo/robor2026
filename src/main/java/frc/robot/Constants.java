@@ -25,7 +25,7 @@ public final class Constants {
   // Use 0 only if forward has already been calibrated to zero in Phoenix Tuner.
   // These offsets are applied in software; existing device configuration is preserved.
   public static final double[] CANCODER_FORWARD_ROTATIONS = {
-      Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+      0, 0, 0, 0};
   public static final double CANCODER_MAX_AGE_SECONDS = 0.10;
   public static final String[] MODULE_NAMES = {"FL", "FR", "BL", "BR"};
 
@@ -50,7 +50,7 @@ public final class Constants {
   // Check each module on blocks. Positive drive must roll the robot forward
   // when zeroed. Positive steer must turn the module counterclockwise from above.
   public static final boolean[] DRIVE_INVERTED = {false, false, false, false};
-  public static final boolean[] STEER_INVERTED = {false, false, false, false};
+  public static final boolean[] STEER_INVERTED = {true, true, true, true};
   // CANcoder direction: counterclockwise module motion must INCREASE
   // the dashboard angle. Use -1.0 for any encoder that reports the opposite sign.
   public static final double[] STEER_ENCODER_SIGN = {1.0, 1.0, 1.0, 1.0};
@@ -60,8 +60,9 @@ public final class Constants {
   // Conservative starting outputs; tune after checking directions on blocks.
   public static final double MAX_DRIVE_OUTPUT = 0.20;
   public static final double MAX_STEER_OUTPUT = 0.20;
-  public static final double STEER_KP = 0.50; // Motor output per radian of error.
-  public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = Math.toRadians(2.0);
+  public static final double STEER_KP = 0.2; // Motor output per radian of error.
+  // Accept up to +/-0.12 CANcoder rotations (43.2 degrees) from calibrated forward.
+  public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = 0.12 * 2.0 * Math.PI;
   public static final int DRIVE_CURRENT_LIMIT_AMPS = 40;
   public static final int STEER_CURRENT_LIMIT_AMPS = 20;
 

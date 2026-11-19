@@ -9,24 +9,28 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class RobotStartupTest {
   @Test
-  void startsDisabledWithVendorLibrariesAndNoConnectedHardware() {
+  void startsDisabledWithVendorLibrariesAndUncalibratedEncoders() {
     assertTrue(HAL.initialize(500, 0));
     assertTrue(RobotBase.isSimulation());
     DriverStationSim.setEnabled(false);
     DriverStationSim.notifyNewData();
 
-    // Constructing Robot loads both the REV and Redux native libraries.
+    // Exercise missing calibration independently of the real robot's configured offsets.
+    double[] savedForwardRotations = Constants.CANCODER_FORWARD_ROTATIONS.clone();
+    Arrays.fill(Constants.CANCODER_FORWARD_ROTATIONS, Double.NaN);
+    // Constructing Robot loads the vendor native libraries.
     try (Robot robot = new Robot()) {
       robot.robotInit();
       robot.disabledInit();
       robot.robotPeriodic();
       robot.disabledPeriodic();
 
-      // No CANcoder configuration/data must never masquerade as a forward module.
+      // Missing CANcoder calibration must never masquerade as a forward module.
       for (String module : Constants.MODULE_NAMES) {
         assertFalse(SmartDashboard.getBoolean("Swerve/" + module + "/Zeroed", true));
         assertFalse(SmartDashboard.getBoolean("Swerve/" + module + "/Encoder healthy", true));
@@ -54,6 +58,8 @@ class RobotStartupTest {
             .getDouble("Setpoint").get(), 1e-6);
       }
     } finally {
+      System.arraycopy(savedForwardRotations, 0, Constants.CANCODER_FORWARD_ROTATIONS, 0,
+          savedForwardRotations.length);
       DriverStationSim.resetData();
       DriverStationSim.notifyNewData();
     }

@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.MagnetHealthValue;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveModule.AbsoluteSteeringEncoder;
 import frc.robot.subsystems.swerve.SwerveModule.AbsoluteSteeringEncoder.Status;
@@ -178,17 +179,34 @@ class SwerveModuleTest {
         assertEquals(0.0, drive.get(), 1e-6);
       }
 
-      // Forward is periodic, and a small error is accepted without steering jitter.
-      encoder.angleRadians = Math.toRadians(1.0);
-      module.refreshSensors();
-      assertTrue(module.pointForward());
-      assertEquals(0.0, drive.get(), 1e-6);
-      assertEquals(0.0, steer.get(), 1e-6);
+      // Both alignment and the dashboard accept the inclusive +/-0.012 rotation range.
+      for (double rotations : new double[] {-0.012, -0.010, 0.0, 0.010, 0.012}) {
+        encoder.angleRadians = rotations * 2.0 * Math.PI;
+        module.refreshSensors();
+        assertTrue(module.pointForward());
+        module.updateDashboard();
+        assertTrue(SmartDashboard.getBoolean("Swerve/Test/Aligned forward", false));
+        assertEquals(0.0, drive.get(), 1e-6);
+        assertEquals(0.0, steer.get(), 1e-6);
+      }
+
+      // Just outside either boundary, keep steering with the drive motor stopped.
+      for (double rotations : new double[] {-0.0121, 0.0121}) {
+        encoder.angleRadians = rotations * 2.0 * Math.PI;
+        module.refreshSensors();
+        assertFalse(module.pointForward());
+        module.updateDashboard();
+        assertFalse(SmartDashboard.getBoolean("Swerve/Test/Aligned forward", true));
+        assertTrue(steer.get() * rotations < 0.0);
+        assertEquals(0.0, drive.get(), 1e-6);
+      }
 
       encoder.angleRadians = Double.NaN;
       module.refreshSensors();
       assertFalse(module.pointForward());
       assertFalse(module.isReady());
+      module.updateDashboard();
+      assertFalse(SmartDashboard.getBoolean("Swerve/Test/Aligned forward", true));
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(0.0, steer.get(), 1e-6);
     } finally {
