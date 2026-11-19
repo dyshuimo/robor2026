@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import frc.robot.subsystems.swerve.SwerveModule.AbsoluteSteeringEncoder;
 import org.junit.jupiter.api.Test;
 
 class SwerveStartupTest {

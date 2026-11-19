@@ -1,5 +1,7 @@
 package frc.robot.subsystems.swerve;
 
+import frc.robot.subsystems.swerve.SwerveModule.AbsoluteSteeringEncoder;
+
 /** Deterministic encoder samples for module and drivetrain fault tests. */
 class TestSteeringEncoder implements AbsoluteSteeringEncoder {
   double angleRadians;

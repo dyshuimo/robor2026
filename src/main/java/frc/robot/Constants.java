@@ -13,9 +13,14 @@ public final class Constants {
   // Rear IDs are inferred from your front module numbering. Verify them.
   public static final int[] DRIVE_CAN_IDS = {1, 4, 7, 10};
   public static final int[] STEER_CAN_IDS = {3, 6, 9, 12};
-  // Each CANcoder has its own ID, independent of the SPARK MAX IDs.
-  // Fill these from Phoenix Tuner X; -1 deliberately means unknown.
-  public static final int[] CANCODER_CAN_IDS = {-1, -1, -1, -1};
+  // CTRE absolute magnetic CANcoders running firmware 26.1.1 (Phoenix 6).
+  // Phoenix Tuner X names, in the same FL, FR, BL, BR order as the other arrays.
+  public static final int[] CANCODER_CAN_IDS = {
+      2,  // Frontleft CANcoder
+      5,  // Frontright CANcoder
+      11, // Rearleft CANcoder
+      8   // Rearright CANcoder
+  };
   // CANcoder absolute reading (rotations) with each module physically facing forward.
   // Use 0 only if forward has already been calibrated to zero in Phoenix Tuner.
   // These offsets are applied in software; existing device configuration is preserved.
