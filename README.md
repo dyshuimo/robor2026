@@ -1,4 +1,5 @@
-# 2026 Mini Swerve Project created by Frank - FRC 9062
+# 2026 Mini Swerve Project - FRC 9062
+### Created by Frank (**dyshuimo** / **import-frankz**)
 
 Robotics project built with **REV SPARK MAX**, **CTRE Absolute CANcoder**, with addtional electronics. Programed to be only a drive base, and is capable with creating and operating **Autonomous Commands**.
 
