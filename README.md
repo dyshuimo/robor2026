@@ -45,8 +45,7 @@ This project is based on a drive base. The code enables testings, with simulatio
 ```
 src/
 ├── main/
-│   ├── deploy/
-│   │   └── example.txt                      # Placeholder explaining roboRIO deploy files
+│   ├── deploy/                             # Optional files deployed to the roboRIO
 │   └── java/frc/robot/
 │       ├── Constants.java                   # CAN IDs, dimensions, calibration, gains & limits
 │       ├── Main.java                        # Standard WPILib robot entrypoint
