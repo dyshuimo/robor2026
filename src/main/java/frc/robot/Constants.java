@@ -62,7 +62,7 @@ public final class Constants {
   public static final double MAX_STEER_OUTPUT = 0.20;
   public static final double STEER_KP = 0.2; // Motor output per radian of error.
   // Accept up to +/-0.12 CANcoder rotations (43.2 degrees) from calibrated forward.
-  public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = 0.1 * 2.0 * Math.PI;
+  public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = 0.1 *  Math.PI;
   public static final int DRIVE_CURRENT_LIMIT_AMPS = 40;
   public static final int STEER_CURRENT_LIMIT_AMPS = 20;
 
