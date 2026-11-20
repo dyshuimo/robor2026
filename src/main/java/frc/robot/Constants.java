@@ -1,7 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.SPI;
-
 /** Hardware settings to fill in before driving. */
 public final class Constants {
   private Constants() {}
@@ -39,11 +37,7 @@ public final class Constants {
   public static final double DRIVE_GEAR_RATIO = 6.12;
 
   // Redux Robotics Boron CANandgyro, connected over CAN.
-  public enum GyroType { NOT_CONFIGURED, CANANDGYRO, ADIS16470, ADXRS450 }
-  public static final GyroType GYRO_TYPE = GyroType.CANANDGYRO;
-
   public static final int GYRO_CAN_ID = 0;
-  public static final SPI.Port GYRO_SPI_PORT = SPI.Port.kOnboardCS0;
   // With the gyro's +Z axis up, counterclockwise rotation should increase heading.
   public static final boolean GYRO_REVERSED = false;
 

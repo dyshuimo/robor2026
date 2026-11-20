@@ -1,12 +1,13 @@
 # 2026 Mini Swerve Project - FRC 9062
-### Created by Frank (**dyshuimo** / **import-frankz**)
+### Created by Frank (***dyshuimo*** / ***import-frankz***)
 
 Robotics project built with **REV SPARK MAX**, **CTRE Absolute CANcoder**, with addtional electronics. Programed to be only a drive base, and is capable with creating and operating **Autonomous Commands**.
 
 ## Project Overview 📄
 
-This project is based on a drive base. The code enables testings, with simulation of build of robot functions.
+This project is based on a drive base. The code enables testings, with simulation of build of robot functions. The swerve drives are designed to be small, with the electronics within the robot using up most of the space. Functionally, this project is a practice of building robot, and understading the basis of robot development. Which in the future, updates and more advanced functions could be added or tested on this robot.
 
+---
 ### Code Design:
 
 ```
@@ -30,15 +31,15 @@ This project is based on a drive base. The code enables testings, with simulatio
                  ▼                                     ▼                                     ▼
 ┌─────────────────────────────────┐   ┌─────────────────────────────────┐   ┌─────────────────────────────────┐
 │ SwerveModule x4 (FL/FR/BL/BR)   │   │ RobotGyro                       │   │ SwervePoseTracker               │
-│ • Open-loop drive, P steering   │   │ • Redux CANandgyro (selected)   │   │ • Wheel positions + heading     │
-│ • 2x SPARK MAX per module       │   │ • ADIS16470 / ADXRS450 options  │   │ • SwerveDriveKinematics         │
+│ • Open-loop drive, P steering   │   │ • Redux Boron CANandgyro        │   │ • Wheel positions + heading     │
+│ • 2x SPARK MAX per module       │   │ • CAN bus (ID 0)                │   │ • SwerveDriveKinematics         │
 │ • Relative drive encoder        │   │ • Connection/calibration checks │   │ • SwerveDriveOdometry           │
 │ • AbsoluteSteeringEncoder       │   │ • CCW-positive heading          │   │ • Pose2d and origin reset       │
 │   └─ CanCoderSteeringEncoder    │   │                                 │   │                                 │
 │      (CTRE CANcoder)            │   │                                 │   │                                 │
 └─────────────────────────────────┘   └─────────────────────────────────┘   └─────────────────────────────────┘
 ```
-
+---
 ### Project File Structure:
 
 ```
@@ -52,7 +53,7 @@ src/
 │       ├── Robot.java                       # TimedRobot lifecycle, PS4 controls & pose reset
 │       └── subsystems/
 │           └── swerve/
-│               ├── RobotGyro.java           # CANandgyro, ADIS16470 & ADXRS450 heading reads
+│               ├── RobotGyro.java           # Redux Boron CANandgyro heading reads
 │               ├── SwerveDrive.java         # Field-relative drive, alignment & dashboard telemetry
 │               ├── SwerveModule.java        # SPARK MAX control & nested CANcoder encoder adapter
 │               └── SwervePoseTracker.java   # Measured wheel/gyro odometry & origin reset
@@ -68,6 +69,22 @@ src/
 ```
 
 ## Hardware Maps 🛞
+
+### Devices on robot
+
+- **Each** of all four **Drives** include the elements listed:
+    - Drive Motor: *Neo Vortex Brushless Motor*
+    - Steer Motor: *Neo V1.1 1650 Brushless Motor*
+    - Encoder: *CTRE Absolute Magnetic CANcoder*
+
+- **Power Distribution Module**: *CTRE Power Distribution Panel* **and** *REV Mini Power Module*
+- **Robot Mainboard**: *NI roboRIO*
+- **Radio**: *OpenMesh OM5P-AC* , **powered by** *REV Robotics Radio Power Module*
+- **Gyro**: *Redux Robotics Boron CANandgyro*
+
+The motors are connected to **Motor Controllers**, which all motors are connected through the *Power Distribution Module*, as well as the **roboRIO** and the *Mini Power Module*. All **CANcoders**, **Gyro**, and **Radio Modules** are powered through the *Mini Power Module*.
+
+---
 
 ### CAN devices
 
@@ -86,6 +103,8 @@ src/
 | **10** | Motor controller | REV SPARK MAX | Swerve / back right drive | RIO CAN |
 | **11** | Absolute encoder | CTRE CANcoder | Swerve / back left steering angle | CANivore / RIO CAN |
 | **12** | Motor controller | REV SPARK MAX | Swerve / back right steering | RIO CAN |
+
+---
 
 ### Controller Mappings
 
