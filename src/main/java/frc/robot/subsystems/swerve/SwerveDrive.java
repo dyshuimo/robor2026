@@ -69,6 +69,12 @@ public class SwerveDrive {
       stop();
       return;
     }
+    // Robot applies the joystick deadband before passing Teleop inputs here.
+    // Recheck forward alignment every idle loop so displaced wheels are corrected.
+    if (forward == 0.0 && left == 0.0 && turn == 0.0) {
+      pointWheelsForward();
+      return;
+    }
     WheelRequest[] requests = calculateFieldRelativeWheelRequests(
         forward, left, turn, poseTracker.getPose().getRotation(),
         Constants.WHEELBASE_METERS, Constants.TRACKWIDTH_METERS);

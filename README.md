@@ -94,7 +94,7 @@ src/
 | **Left Stick X** | Translation Left / Right | Teleop: field-relative left/right movement; 8% deadband. |
 | **Right Stick X** | Chassis Rotation | Teleop: left rotates counterclockwise, right clockwise; 8% deadband. |
 | **Triangle** | Reset Heading | Teleop/disabled: zeroes position and heading; waits for valid sensors. |
-| **(Default / Idle)** | Stop Drive / Steering | Centered sticks stop motor output after teleop alignment. |
+| **(Default / Idle)** | Align Wheels Forward | Teleop idle: drive stops; steering keeps wheels facing robot-forward. |
 
 
 ## Building, Testing & Deploying 🛠️

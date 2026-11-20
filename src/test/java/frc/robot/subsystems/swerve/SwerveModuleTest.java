@@ -179,9 +179,10 @@ class SwerveModuleTest {
         assertEquals(0.0, drive.get(), 1e-6);
       }
 
-      // Both alignment and the dashboard accept the inclusive +/-0.012 rotation range.
-      for (double rotations : new double[] {-0.012, -0.010, 0.0, 0.010, 0.012}) {
-        encoder.angleRadians = rotations * 2.0 * Math.PI;
+      // Both alignment and the dashboard accept the configured inclusive tolerance.
+      double tolerance = Constants.STEER_ALIGNMENT_TOLERANCE_RADIANS;
+      for (double angle : new double[] {-tolerance, -tolerance / 2, 0, tolerance / 2, tolerance}) {
+        encoder.angleRadians = angle;
         module.refreshSensors();
         assertTrue(module.pointForward());
         module.updateDashboard();
@@ -191,13 +192,13 @@ class SwerveModuleTest {
       }
 
       // Just outside either boundary, keep steering with the drive motor stopped.
-      for (double rotations : new double[] {-0.0121, 0.0121}) {
-        encoder.angleRadians = rotations * 2.0 * Math.PI;
+      for (double angle : new double[] {-tolerance - 0.0001, tolerance + 0.0001}) {
+        encoder.angleRadians = angle;
         module.refreshSensors();
         assertFalse(module.pointForward());
         module.updateDashboard();
         assertFalse(SmartDashboard.getBoolean("Swerve/Test/Aligned forward", true));
-        assertTrue(steer.get() * rotations < 0.0);
+        assertTrue(steer.get() * angle < 0.0);
         assertEquals(0.0, drive.get(), 1e-6);
       }
 

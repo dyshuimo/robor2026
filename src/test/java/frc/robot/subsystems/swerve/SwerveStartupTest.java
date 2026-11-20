@@ -76,6 +76,54 @@ class SwerveStartupTest {
       swerve.periodic();
       assertEquals(1.0, SmartDashboard.getNumber("Swerve/X meters", -1), 1e-6);
 
+      // Releasing the sticks after strafing points every wheel forward without driving.
+      for (var sample : steering) {
+        sample.angleRadians = Math.PI / 2.0;
+      }
+      swerve.periodic();
+      swerve.drive(0, 1, 0);
+      assertDriveOutput(Constants.MAX_DRIVE_OUTPUT);
+      assertSteerOutput(0.0);
+      swerve.drive(0, 0, 0);
+      assertDriveOutput(0.0);
+      for (int i = 0; i < modules.length; i++) {
+        assertTrue(new SimDeviceSim("SPARK MAX [" + (52 + i * 2) + "]")
+            .getDouble("Setpoint").get() < 0.0);
+      }
+
+      // Settled wheels stop steering, but later drift is corrected on the next idle loop.
+      for (var sample : steering) {
+        sample.angleRadians = 0.0;
+      }
+      swerve.periodic();
+      swerve.drive(0, 0, 0);
+      assertDriveOutput(0.0);
+      assertSteerOutput(0.0);
+      for (int i = 0; i < steering.length; i++) {
+        steering[i].angleRadians = i % 2 == 0 ? Math.PI / 2.0 : -Math.PI / 2.0;
+      }
+      swerve.periodic();
+      swerve.drive(0, 0, 0);
+      assertDriveOutput(0.0);
+      for (int i = 0; i < modules.length; i++) {
+        double output = new SimDeviceSim("SPARK MAX [" + (52 + i * 2) + "]")
+            .getDouble("Setpoint").get();
+        assertTrue(output * steering[i].angleRadians < 0.0);
+      }
+      // Idle alignment preserves the field origin and measured travel.
+      assertEquals(1.0, SmartDashboard.getNumber("Swerve/X meters", -1), 1e-6);
+      assertEquals(0.0, SmartDashboard.getNumber("Swerve/Y meters", -1), 1e-6);
+      assertEquals(0.0, SmartDashboard.getNumber("Swerve/Heading degrees", -1), 1e-6);
+
+      // A new driver request overrides idle alignment without waiting for forward angles.
+      for (var sample : steering) {
+        sample.angleRadians = Math.PI / 2.0;
+      }
+      swerve.periodic();
+      swerve.drive(0, 1, 0);
+      assertDriveOutput(Constants.MAX_DRIVE_OUTPUT);
+      assertSteerOutput(0.0);
+
       // A later Teleop reset also completes automatically if the gyro is briefly unavailable.
       gyro.connected = false;
       swerve.resetOdometry();
@@ -126,6 +174,9 @@ class SwerveStartupTest {
       assertFalse(ready());
       assertDriveOutput(0.0);
       assertEquals("WAITING_FOR_SENSORS", SmartDashboard.getString("Swerve/State", ""));
+      swerve.drive(0, 0, 0);
+      assertDriveOutput(0.0);
+      assertSteerOutput(0.0);
       steering[3].status = AbsoluteSteeringEncoder.Status.OK;
       swerve.periodic();
       assertFalse(ready());
@@ -167,6 +218,13 @@ class SwerveStartupTest {
   private static void assertDriveOutput(double expected) {
     for (int i = 0; i < 4; i++) {
       assertEquals(expected, new SimDeviceSim("SPARK MAX [" + (51 + i * 2) + "]")
+          .getDouble("Setpoint").get(), 1e-6);
+    }
+  }
+
+  private static void assertSteerOutput(double expected) {
+    for (int i = 0; i < 4; i++) {
+      assertEquals(expected, new SimDeviceSim("SPARK MAX [" + (52 + i * 2) + "]")
           .getDouble("Setpoint").get(), 1e-6);
     }
   }
