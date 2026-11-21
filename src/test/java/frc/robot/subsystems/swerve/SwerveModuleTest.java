@@ -149,7 +149,6 @@ class SwerveModuleTest {
     var steer = new SimDeviceSim("SPARK MAX [42]").getDouble("Setpoint");
 
     try {
-      // An uncalibrated module must not steer or report alignment complete.
       assertFalse(module.pointForward());
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(0.0, steer.get(), 1e-6);
@@ -163,14 +162,12 @@ class SwerveModuleTest {
       DriverStationSim.setEnabled(true);
       DriverStationSim.notifyNewData();
 
-      // Start with a drive command, then point forward from the backward direction.
       module.setDesiredState(0.5, Math.PI);
       assertTrue(drive.get() > 0.0);
       assertFalse(module.pointForward());
       assertEquals(0.0, drive.get(), 1e-6);
       assertEquals(Constants.MAX_STEER_OUTPUT, Math.abs(steer.get()), 1e-6);
 
-      // Repeated calls recompute steering in both directions as the angle changes.
       for (double degrees : new double[] {90.0, -90.0}) {
         encoder.angleRadians = Math.toRadians(degrees);
         module.refreshSensors();

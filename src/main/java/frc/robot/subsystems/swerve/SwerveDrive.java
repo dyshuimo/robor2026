@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import java.util.Arrays;
 
-/** Field-centric swerve: measured odometry, open-loop drive, proportional steering. */
 public class SwerveDrive {
   private final SwerveModule[] modules;
   private final RobotGyro gyro;
@@ -53,13 +52,12 @@ public class SwerveDrive {
     int id = Constants.CANCODER_CAN_IDS[index];
     for (int i = 0; i < Constants.CANCODER_CAN_IDS.length; i++) {
       if (i != index && Constants.CANCODER_CAN_IDS[i] == id) {
-        return -1; // Duplicate CANcoder IDs cannot identify individual modules.
+        return -1;
       }
     }
     return id;
   }
 
-  /** Inputs -1 to +1: FIELD forward, FIELD left, and counterclockwise spin. */
   public void drive(double forward, double left, double turn) {
     if (aligningForTeleop) {
       finishTeleopAlignment();
@@ -69,8 +67,7 @@ public class SwerveDrive {
       stop();
       return;
     }
-    // Robot applies the joystick deadband before passing Teleop inputs here.
-    // Recheck forward alignment every idle loop so displaced wheels are corrected.
+
     if (forward == 0.0 && left == 0.0 && turn == 0.0) {
       pointWheelsForward();
       return;
@@ -83,7 +80,6 @@ public class SwerveDrive {
     }
   }
 
-  /** Start each Teleop with stopped drive motors and all wheels pointing forward. */
   public void prepareForTeleop() {
     aligningForTeleop = true;
     resetOdometry();
@@ -91,12 +87,10 @@ public class SwerveDrive {
   }
 
   private void finishTeleopAlignment() {
-    // Physical steering takes multiple loops; never block the robot main loop waiting for it.
     aligningForTeleop = !pointWheelsForward();
     updateDashboard();
   }
 
-  /** Call each loop until all wheels face robot-forward, with drive motors stopped. */
   public boolean pointWheelsForward() {
     if (!hasValidPose()) {
       stop();
@@ -104,16 +98,13 @@ public class SwerveDrive {
     }
     boolean aligned = true;
     for (SwerveModule module : modules) {
-      // Update every module even if an earlier one is still turning.
       aligned &= module.pointForward();
     }
     return aligned;
   }
 
-  // Speed here is a normalized motor request, NOT meters per second.
   public record WheelRequest(double speed, double angleRadians) {}
 
-  /** Rotate the joystick translation into the robot frame; spin is unchanged. */
   public static WheelRequest[] calculateFieldRelativeWheelRequests(
       double forward, double left, double turn, Rotation2d heading,
       double wheelbase, double trackwidth) {
@@ -122,13 +113,11 @@ public class SwerveDrive {
     return calculateWheelRequests(robotForward, robotLeft, turn, wheelbase, trackwidth);
   }
 
-  /** Add translation and rotation vectors, then scale all wheels together. */
   public static WheelRequest[] calculateWheelRequests(
       double forward, double left, double turn, double wheelbase, double trackwidth) {
     double radius = Math.hypot(wheelbase / 2.0, trackwidth / 2.0);
     double x = (wheelbase / 2.0) / radius;
     double y = (trackwidth / 2.0) / radius;
-    // Module positions: +x is forward, +y is left.
     double[] moduleX = {x, x, -x, -x};
     double[] moduleY = {y, -y, y, -y};
     WheelRequest[] requests = new WheelRequest[4];
@@ -146,7 +135,6 @@ public class SwerveDrive {
     return requests;
   }
 
-  /** Reset software state and drive travel; preserve each calibrated absolute steering reference. */
   public void resetForStartup() {
     stop();
     for (SwerveModule module : modules) {
@@ -163,9 +151,7 @@ public class SwerveDrive {
     updateDashboard();
   }
 
-  /** Called every robot loop, including while disabled and with centered sticks. */
   public void periodic() {
-    // Initialize modules even while the gyro is disconnected or still calibrating.
     for (SwerveModule module : modules) {
       module.refreshSensors();
       module.initializeStartup();
@@ -187,10 +173,8 @@ public class SwerveDrive {
     updateDashboard();
   }
 
-  /** Triangle: make the current position (0,0) and current facing field-forward. */
   public void resetOdometry() {
     stop();
-    // Complete automatically once sensors are available; no startup button press is needed.
     poseResetPending = true;
     periodic();
   }

@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
-/** Two SPARK MAX motors, a CTRE absolute magnetic CANcoder, and the drive travel encoder. */
 public class SwerveModule {
   private final String name;
   private final SparkMax driveMotor;
@@ -60,7 +59,6 @@ public class SwerveModule {
     driveConfig.encoder.positionConversionFactor(1.0);
     driveConfig.signals.primaryEncoderPositionPeriodMs(20);
     SparkMaxConfig steerConfig = new SparkMaxConfig();
-    // Steering coasts when no output is requested.
     steerConfig.inverted(steerInverted).idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.STEER_CURRENT_LIMIT_AMPS).voltageCompensation(12.0);
 
@@ -75,7 +73,6 @@ public class SwerveModule {
     }
   }
 
-  /** Reset drive travel only; the calibrated CANcoder forward reference survives startup. */
   public void resetForStartup() {
     stop();
     steering = new AbsoluteSteeringEncoder.Reading(
@@ -86,12 +83,10 @@ public class SwerveModule {
     startupResetPending = true;
   }
 
-  /** Capture a coherent steering sample for this control loop. */
   public void refreshSensors() {
     steering = steerEncoder.read();
   }
 
-  /** Retry initial sensor reads automatically, including if enable precedes CAN startup. */
   public void initializeStartup() {
     if (!startupResetPending || zeroPending || !configurationOK || !steering.valid()) {
       return;
@@ -104,7 +99,6 @@ public class SwerveModule {
     if (clearResult == REVLibError.kOk && driveClearResult == REVLibError.kOk
         && driveOK && Double.isFinite(drivePosition)) {
       zeroDriveRotations = drivePosition;
-      // Wait for a CAN status update confirming the reset warning was cleared.
       zeroPending = true;
     }
   }
@@ -123,7 +117,6 @@ public class SwerveModule {
       zeroPending = false;
       startupResetPending = false;
     }
-    // A later controller reboot loses the reference; restart initialization before driving.
     if (hasReset) {
       zeroed = false;
     }
@@ -134,7 +127,6 @@ public class SwerveModule {
     return steering.angleRadians();
   }
 
-  /** Measured drive distance and steering angle for WPILib odometry. */
   public SwerveModulePosition getPosition() {
     double rotations = driveEncoder.getPosition();
     boolean driveOK = driveMotor.getLastError() == REVLibError.kOk;
@@ -147,7 +139,6 @@ public class SwerveModule {
     return new SwerveModulePosition(meters, new Rotation2d(angle));
   }
 
-  /** Steer to the calibrated forward direction; return true once within tolerance. */
   public boolean pointForward() {
     driveMotor.stopMotor();
     if (!isReady()) {
@@ -160,7 +151,6 @@ public class SwerveModule {
       stop();
       return false;
     }
-    // Do not optimize by 180 degrees: use the calibrated physical forward reference.
     double error = MathUtil.angleModulus(-currentAngle);
     if (Math.abs(error) <= Constants.STEER_ALIGNMENT_TOLERANCE_RADIANS) {
       steerMotor.stopMotor();
@@ -173,7 +163,6 @@ public class SwerveModule {
 
   public void setDesiredState(double speed, double targetAngle) {
     if (!isReady() || Math.abs(speed) < 0.001) {
-      // Avoid steering jitter when the sticks are centered.
       stop();
       return;
     }
@@ -184,7 +173,6 @@ public class SwerveModule {
       return;
     }
     double error = MathUtil.angleModulus(targetAngle - currentAngle);
-    // Turn at most 90 degrees; reverse the drive motor for the other half-circle.
     if (Math.abs(error) > Math.PI / 2.0) {
       speed = -speed;
       error = MathUtil.angleModulus(error + Math.PI);
@@ -192,7 +180,6 @@ public class SwerveModule {
     double steerOutput = MathUtil.clamp(
         Constants.STEER_KP * error, -Constants.MAX_STEER_OUTPUT, Constants.MAX_STEER_OUTPUT);
     steerMotor.set(steerOutput);
-    // Reduce drive while the wheel is still turning toward its requested angle.
     driveMotor.set(speed * Constants.MAX_DRIVE_OUTPUT * Math.max(0.0, Math.cos(error)));
   }
 
@@ -216,7 +203,6 @@ public class SwerveModule {
     }
   }
 
-  /** One measured module azimuth, independent of the drive motor's travel encoder. */
   @FunctionalInterface
   interface AbsoluteSteeringEncoder {
     enum Status { OK, UNCONFIGURED_ID, UNCONFIGURED_FORWARD, CAN_ERROR, STALE, MAGNET_FAULT,
@@ -232,7 +218,6 @@ public class SwerveModule {
     Reading read();
   }
 
-  /** Reads absolute module angle without zeroing the CANcoder or overwriting Tuner offsets. */
   static final class CanCoderSteeringEncoder implements AbsoluteSteeringEncoder, AutoCloseable {
     private final CANcoder encoder;
     private final StatusSignal<Angle> position;

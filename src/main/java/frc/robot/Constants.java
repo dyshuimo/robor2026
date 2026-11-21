@@ -1,6 +1,5 @@
 package frc.robot;
 
-/** Hardware settings to fill in before driving. */
 public final class Constants {
   private Constants() {}
 
@@ -12,7 +11,6 @@ public final class Constants {
   public static final int[] DRIVE_CAN_IDS = {1, 4, 7, 10};
   public static final int[] STEER_CAN_IDS = {3, 6, 9, 12};
   // CTRE absolute magnetic CANcoders running firmware 26.1.1 (Phoenix 6).
-  // Phoenix Tuner X names, in the same FL, FR, BL, BR order as the other arrays.
   public static final int[] CANCODER_CAN_IDS = {
       2,  // Frontleft CANcoder
       5,  // Frontright CANcoder
@@ -32,7 +30,6 @@ public final class Constants {
   public static final double TRACKWIDTH_METERS = 0.377825; // Left to right.
 
 
-  // Both are needed to measure odometry in meters.
   public static final double WHEEL_DIAMETER_METERS = 0.1016;
   public static final double DRIVE_GEAR_RATIO = 6.12;
 
@@ -55,7 +52,6 @@ public final class Constants {
   public static final double MAX_DRIVE_OUTPUT = 0.20;
   public static final double MAX_STEER_OUTPUT = 0.20;
   public static final double STEER_KP = 0.2; // Motor output per radian of error.
-  // Accept up to +/-0.12 CANcoder rotations (43.2 degrees) from calibrated forward.
   public static final double STEER_ALIGNMENT_TOLERANCE_RADIANS = 0.1 *  Math.PI;
   public static final int DRIVE_CURRENT_LIMIT_AMPS = 40;
   public static final int STEER_CURRENT_LIMIT_AMPS = 20;

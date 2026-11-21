@@ -7,7 +7,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
-/** Tracks measured wheel travel and gyro heading, including the Triangle reset. */
 public class SwervePoseTracker {
   private final SwerveDriveKinematics kinematics;
   private SwerveDriveOdometry odometry;
@@ -29,23 +28,19 @@ public class SwervePoseTracker {
     }
   }
 
-  /** Set (x, y, heading) to (0, 0, 0) using CURRENT sensor readings as the baseline. */
   public void reset(Rotation2d rawHeading, SwerveModulePosition[] positions) {
     if (odometry == null) {
       odometry = new SwerveDriveOdometry(kinematics, rawHeading, positions, new Pose2d());
     } else {
       odometry.resetPosition(rawHeading, positions, new Pose2d());
     }
-    // WPILib retains a gyro offset. No hardware gyro/encoder reset is needed.
     needsReset = false;
   }
 
   public void invalidate() {
-    // After losing a reference, require an explicit reset instead of moving the field frame.
     needsReset = true;
   }
 
-  /** Discard all pose history when the robot starts. */
   public void clear() {
     odometry = null;
     needsReset = true;
