@@ -1,5 +1,9 @@
 package frc.robot;
 
+<<<<<<< Updated upstream
+=======
+/** Hardware settings to fill in before driving. */
+>>>>>>> Stashed changes
 public final class Constants {
   private Constants() {}
 
